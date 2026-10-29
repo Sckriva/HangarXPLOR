@@ -209,3 +209,5 @@ dist/
 
 .DS_Store
 xcuserdata
+# Harness: RSI assets downloaded by tools/harness/fetch_rsi.py (RSI property, not versioned)
+tools/harness/rsi/
