@@ -211,3 +211,5 @@ dist/
 xcuserdata
 # Harness: RSI assets downloaded by tools/harness/fetch_rsi.py (RSI property, not versioned)
 tools/harness/rsi/
+# Harness: real pages captured from a live account (personal data, never versioned)
+tools/harness/private/
