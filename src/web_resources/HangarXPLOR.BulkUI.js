@@ -98,8 +98,6 @@ HangarXPLOR.BindBulkUI = function()
 
 HangarXPLOR.UpdateStatus = function(pageNo, state, retryCount, retryDelay)
 {
-  HangarXPLOR.$bulkUI.$loading.empty();
-
   var amount, label;
 
   if (state === 'rate-limited') {
@@ -110,10 +108,15 @@ HangarXPLOR.UpdateStatus = function(pageNo, state, retryCount, retryDelay)
     label  = 'Failed on page ' + pageNo;
   } else {
     amount = 'Loading';
-    label  = 'Page ' + pageNo + '\u2026';
+    label  = pageNo ? 'Page ' + pageNo + '…' : 'Please Wait';
   }
 
-  HangarXPLOR.$bulkUI.$loading.append(
+  // The buyback page has its own summary panel
+  var $ui = HangarXPLOR._pageType === 'buyback' ? HangarXPLOR.$buybackBulkUI : HangarXPLOR.$bulkUI;
+  if (!$ui) return;
+
+  $ui.$loading.empty();
+  $ui.$loading.append(
     $('<span>', { class: 'amount', text: amount }),
     $('<span>', { class: 'label', text: label }),
     $('<br>')
