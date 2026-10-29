@@ -3,6 +3,11 @@
 > Extension de navigateur qui transforme la page **My Hangar** de [robertsspaceindustries.com](https://robertsspaceindustries.com/account/pledges) : tout le hangar chargé d'un coup, filtres avancés, recherche floue, valeurs de melt et exports.
 > Ce dépôt est un fork maintenu de [dolkensp/HangarXPLOR](https://github.com/dolkensp/HangarXPLOR), dont l'auteur n'a plus rien publié depuis avril 2026. Il corrige ce que les changements du site RSI ont cassé (pagination, menus, identification des vaisseaux, classement des objets), reprend deux contributions restées en attente chez l'auteur (page **Buyback**, export des **CCU**) et ajoute un filtre **Coupons**.
 
+> [!NOTE]
+> **Édition d'attente.** Ce fork n'a pas vocation à remplacer le projet d'origine. Tous ses correctifs sont proposés à l'auteur (voir [Contribution](#contribution-au-projet-dorigine)). Dès qu'ils seront intégrés et publiés, revenez à l'extension officielle.
+>
+> **English:** a stop-gap edition of [dolkensp/HangarXPLOR](https://github.com/dolkensp/HangarXPLOR) fixing what recent RSI site changes broke: the bottom pager reloading the page, dropdowns closing instantly, unidentified ships, uncategorized armor and paint packs, and lost paint thumbnails. It also adds the buyback page and the CCU export (PRs #139 and #144, fixed). Every fix is proposed upstream as #148, #151, #152 and #153. Install: load the `src` folder as an unpacked extension.
+
 ![HangarXPLOR sur la page My Hangar](docs/img/apercu.png)
 
 <sub>Captures réalisées avec le banc de test du dépôt et des données factices : vrai CSS et vrais scripts RSI, aucun compte réel.</sub>
@@ -168,8 +173,9 @@ L'extension n'est pas publiée sur un store : on la charge en **mode développeu
 
 1. Récupérez le dépôt :
    ```bash
-   git clone http://hildarian:3000/Sckriva/hangarxplor.git
+   git clone https://github.com/Sckriva/HangarXPLOR.git
    ```
+   Ou, sans git : bouton **Code → Download ZIP** sur la page GitHub, puis décompressez.
 2. Ouvrez la page des extensions :
    | Navigateur | Adresse |
    |---|---|
@@ -317,14 +323,14 @@ Pour comparer avec une autre version, extrayez-la dans un dossier du dépôt ave
 |---|---|
 | **`main`** | Branche de travail : code d'origine + correctifs + PR #139 et #144 reprises + filtre Coupons + banc de test. |
 | `release` | Copie exacte de la branche `release` de l'auteur d'origine, jamais modifiée ici. |
-| `fix/pager-reload-and-rsi-widgets` | Correctif seul, tel que proposé à l'auteur d'origine. |
+| `fix/pager-reload-and-rsi-widgets`, `fix/ship-identification`, `fix/kindless-items-thumbnails-titles`, `feature/coupons-filter` | Chaque correctif seul, basé sur `release`, tel que proposé à l'auteur d'origine (#148, #151, #152, #153). |
 | `archive/v1` | Ancienne version (Manifest V2) de l'auteur d'origine. |
 
 **Récupérer les nouveautés de l'auteur d'origine** (remote `origin` = `dolkensp/HangarXPLOR`) :
 
 ```bash
 git fetch origin
-git switch release && git merge --ff-only origin/release && git push gitea release
+git switch release && git merge --ff-only origin/release
 git switch main && git merge release
 ```
 
@@ -334,7 +340,18 @@ git switch main && git merge release
 
 ## Contribution au projet d'origine
 
-Les correctifs 1 et 2 sont proposés à l'auteur dans la pull request **[dolkensp/HangarXPLOR#148](https://github.com/dolkensp/HangarXPLOR/pull/148)**, branche `fix/pager-reload-and-rsi-widgets`. Elle est toujours sans réponse : l'auteur ne publie plus rien depuis avril 2026. Les autres correctifs, les PR reprises, le filtre Coupons et le banc de test sont propres à cette édition.
+Le but est que ces correctifs reviennent dans le projet d'origine. Ils lui sont proposés en pull requests courtes et indépendantes, qu'il peut accepter une à une, dans n'importe quel ordre :
+
+| Pull request | Contenu | Correctifs de ce README |
+|---|---|---|
+| [#148](https://github.com/dolkensp/HangarXPLOR/pull/148) | Pager du bas qui recharge la page, menus capturés par RSI | 1 et 2 |
+| [#151](https://github.com/dolkensp/HangarXPLOR/pull/151) | Identification des vaisseaux, table d'export régénérée | 3 |
+| [#152](https://github.com/dolkensp/HangarXPLOR/pull/152) | Objets sans type, filtres, vignettes, éléments des titres | 4 et 5 |
+| [#153](https://github.com/dolkensp/HangarXPLOR/pull/153) | Filtre Coupons | ajout |
+
+Les corrections de la page Buyback ont été proposées à Drew Short, l'auteur de la PR [#139](https://github.com/dolkensp/HangarXPLOR/pull/139), en commentaire de celle-ci, pour qu'il puisse les intégrer à son travail. L'export des CCU ([#144](https://github.com/dolkensp/HangarXPLOR/pull/144)) n'a besoin d'aucune correction.
+
+Seul le banc de test reste propre à cette édition.
 
 Une analyse des PR ouvertes chez l'auteur a écarté [#145](https://github.com/dolkensp/HangarXPLOR/pull/145) (« trusted sites ») : elle enverrait le contenu du hangar à des sites tiers et demanderait une permission sur tous les sites. Les plus anciennes (#71, #73, #77, #103) sont obsolètes ou en conflit complet avec le code actuel.
 
