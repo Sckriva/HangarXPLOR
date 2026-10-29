@@ -1,332 +1,357 @@
-# HangarXPLOR — édition corrigée
+# HangarXPLOR — fixed edition
 
-> Extension de navigateur qui transforme la page **My Hangar** de [robertsspaceindustries.com](https://robertsspaceindustries.com/account/pledges) : tout le hangar chargé d'un coup, filtres avancés, recherche floue, valeurs de melt et exports.
-> Ce dépôt est un fork maintenu de [dolkensp/HangarXPLOR](https://github.com/dolkensp/HangarXPLOR), dont l'auteur n'a plus rien publié depuis avril 2026. Il corrige ce que les changements du site RSI ont cassé (pagination, menus, identification des vaisseaux, classement des objets), reprend deux contributions restées en attente chez l'auteur (page **Buyback**, export des **CCU**) et ajoute un filtre **Coupons**.
+🇫🇷 [Version française](README.fr.md)
+
+> A browser extension that upgrades the **My Hangar** page on [robertsspaceindustries.com](https://robertsspaceindustries.com/account/pledges): the whole hangar loaded at once, advanced filters, fuzzy search, melt values and exports.
+>
+> This repository is a fork of [dolkensp/HangarXPLOR](https://github.com/dolkensp/HangarXPLOR), whose author hasn't published anything since April 2026. It:
+> - fixes what recent RSI site changes broke: paging, dropdowns, ship identification and item categories;
+> - picks up two contributions still waiting upstream: the **buyback page** and the **CCU export**;
+> - adds a **Coupons** filter.
 
 > [!NOTE]
-> **Édition d'attente.** Ce fork n'a pas vocation à remplacer le projet d'origine. Tous ses correctifs sont proposés à l'auteur (voir [Contribution](#contribution-au-projet-dorigine)). Dès qu'ils seront intégrés et publiés, revenez à l'extension officielle.
->
-> **English:** a stop-gap edition of [dolkensp/HangarXPLOR](https://github.com/dolkensp/HangarXPLOR) fixing what recent RSI site changes broke: the bottom pager reloading the page, dropdowns closing instantly, unidentified ships, uncategorized armor and paint packs, and lost paint thumbnails. It also adds the buyback page and the CCU export (PRs #139 and #144, fixed). Every fix is proposed upstream as #148, #151, #152 and #153. Install: load the `src` folder as an unpacked extension.
+> **Stop-gap edition.** This fork is not meant to replace the original project. Every fix is proposed upstream (see [Contributing upstream](#contributing-upstream)). Once they are merged and released, switch back to the official extension.
 
-![HangarXPLOR sur la page My Hangar](docs/img/apercu.png)
+![HangarXPLOR on the My Hangar page](docs/img/apercu.png)
 
-<sub>Captures réalisées avec le banc de test du dépôt et des données factices : vrai CSS et vrais scripts RSI, aucun compte réel.</sub>
+<sub>Screenshots taken with the repository's test bench and made-up pledges: RSI's real CSS and scripts, no real account.</sub>
 
 ---
 
-## Sommaire
+## Contents
 
-- [Fonctionnalités](#fonctionnalités)
-- [Ce que cette édition corrige](#ce-que-cette-édition-corrige)
-- [Ce que cette édition ajoute](#ce-que-cette-édition-ajoute)
+- [Features](#features)
+- [What this edition fixes](#what-this-edition-fixes)
+- [What this edition adds](#what-this-edition-adds)
 - [Installation](#installation)
-- [Utilisation](#utilisation)
-- [Fonctionnement technique](#fonctionnement-technique)
-- [Banc de test](#banc-de-test)
-- [Organisation du dépôt](#organisation-du-dépôt)
-- [Contribution au projet d'origine](#contribution-au-projet-dorigine)
-- [Crédits et licence](#crédits-et-licence)
+- [Usage](#usage)
+- [How it works](#how-it-works)
+- [Test bench](#test-bench)
+- [Repository layout](#repository-layout)
+- [Contributing upstream](#contributing-upstream)
+- [Credits and license](#credits-and-license)
 
 ---
 
-## Fonctionnalités
+## Features
 
-| | Fonctionnalité | Détail |
+| | Feature | Details |
 |---|---|---|
-| ⚡ | **Hangar complet en une fois** | Toutes les pages du hangar sont chargées en arrière-plan, puis affichées et triées ensemble. |
-| 🔎 | **Recherche floue** | Tolère les fautes de frappe (Fuse.js). Une suggestion s'affiche, **Tab** la complète. |
-| 🗂️ | **Filtre par type** | Vaisseaux, packs de jeu, combos, peintures, composants, équipement, upgrades, **coupons**, décorations, sélection. Les objets que RSI laisse sans type (armures, peintures de packs…) sont classés d'après leur nom. |
-| 🏷️ | **Filtres rapides** | LTI, Warbond, Giftable, Meltable, Upgraded, Valuable, Reward, Free CCUs. |
-| ↕️ | **Tri** | Par date d'achat, par nom ou par valeur. |
-| 📄 | **Pagination** | 10, 20, 50, 100 ou tout le hangar par page, avec un pager en haut **et en bas** de la liste. |
-| 💲 | **Valeurs** | Valeur de melt et pledge d'origine sous chaque élément. Panneau flottant avec la dépense totale et le total de la sélection. |
-| ✈️ | **Noms et vignettes corrigés** | Les vaisseaux upgradés (CCU) affichent leur vrai nom et l'image du vaisseau obtenu, tirés du *ship matrix* officiel. Les autres gardent l'image de RSI, peinture comprise. |
-| 💾 | **Cache** | Le hangar est mis en cache dans le navigateur : les visites suivantes s'affichent instantanément. |
-| 📤 | **Exports** | Vaisseaux (`shiplist.csv` / `.json`, au format [Hangar Transfer Format](https://docs.starcitizen.fans/)) et CCU (`upgradelist.csv` / `.json`), pour d'autres outils. |
-| ♻️ | **Page Buyback** | Même interface sur la page des pledges rachetables : tout chargé d'un coup, filtres, tri, recherche, compteurs, exports. |
+| ⚡ | **Whole hangar at once** | Every page of the hangar is loaded in the background, then shown and sorted together. |
+| 🔎 | **Fuzzy search** | Tolerates typos (Fuse.js). A suggestion appears; **Tab** completes it. |
+| 🗂️ | **Type filter** | Ships, game packages, combos, paints, components, equipment, upgrades, **coupons**, decorations, selection. Items RSI leaves without a type (armor pieces, paints in packs…) are classified from their name. |
+| 🏷️ | **Quick filters** | LTI, Warbond, Giftable, Meltable, Upgraded, Valuable, Reward, Free CCUs. |
+| ↕️ | **Sorting** | By pledge date, name or value. |
+| 📄 | **Paging** | 10, 20, 50, 100 or the whole hangar per page, with a pager above **and below** the list. |
+| 💲 | **Values** | Melt value and base pledge under each item. A floating panel shows total spend and the value of the selection. |
+| ✈️ | **Fixed names and thumbnails** | CCU'd ships show their real name and the image of the ship you now own, from the official ship matrix. Other pledges keep RSI's image, paint included. |
+| 💾 | **Cache** | The hangar is cached in the browser, so later visits load instantly. |
+| 📤 | **Exports** | Ships (`shiplist.csv` / `.json`, in [Hangar Transfer Format](https://docs.starcitizen.fans/)) and CCUs (`upgradelist.csv` / `.json`), for other tools. |
+| ♻️ | **Buyback page** | The same interface on the buy-back pledges page: everything loaded at once, filters, sorting, search, counters, exports. |
 
 ---
 
-## Ce que cette édition corrige
+## What this edition fixes
 
-Le code d'origine fonctionnait, mais **RSI a modifié sa page Hangar** et plusieurs comportements se sont cassés. Chaque correctif ci-dessous a été **vérifié sur un vrai hangar de 531 pledges** (en lecture seule), puis reproduit et testé sur le [banc de test](#banc-de-test). Les correctifs 1 et 2 sont aussi proposés à l'auteur d'origine (voir [Contribution](#contribution-au-projet-dorigine)).
+The original code worked, but **RSI changed its hangar page** and several things broke. Each fix below was **checked against a real 531-pledge hangar** (read-only), then reproduced and tested on the [test bench](#test-bench). All of them are proposed upstream (see [Contributing upstream](#contributing-upstream)).
 
-### 1. La page 2 réaffichait la page 1 et la recherche disparaissait
+### 1. Page 2 showed page 1 again and the search was lost
 
-**Symptôme :** avec une recherche active, cliquer sur « 2 » rechargeait toute la page. La recherche était vidée, la liste affichait les premiers pledges, et le pager indiquait pourtant « 2 ».
+**Symptom:** with a search active, clicking "2" reloaded the whole page. The search was cleared and the list showed the first pledges, yet the pager said "2".
 
-**Cause :** RSI affiche désormais **deux pagers natifs**, un au-dessus et un sous la liste, et leur a retiré la classe `js-pager` que l'extension utilisait pour les supprimer. Celui du haut disparaissait quand même, parce que sa zone est remplacée par les contrôles XPLORer. Celui du bas restait en place, et ses liens rechargent la page.
+**Cause:** RSI now renders **two native pagers**, one above and one below the list, and dropped the `js-pager` class the extension used to remove them. The top one disappeared anyway, because its area is replaced by XPLORer's controls. The bottom one stayed, and its links reload the page.
 
 ```mermaid
 sequenceDiagram
-    actor U as Utilisateur
-    participant P as Pager natif RSI (bas)
-    participant S as Site RSI
+    actor U as User
+    participant P as RSI native pager (bottom)
+    participant S as RSI site
     participant X as HangarXPLOR
-    U->>X: recherche « LTI »
-    X-->>U: résultats page 1
-    U->>P: clic sur « 2 »
+    U->>X: search "LTI"
+    X-->>U: results, page 1
+    U->>P: click "2"
     P->>S: GET /account/pledges?page=2
-    Note over S,X: rechargement complet de la page
-    S->>X: redémarrage de l'extension (depuis le cache)
-    X-->>U: recherche vide, liste en page 1
-    P-->>U: le pager natif indique « 2 »
+    Note over S,X: full page reload
+    S->>X: extension restarts (from cache)
+    X-->>U: empty search, list on page 1
+    P-->>U: native pager shows "2"
 ```
 
-**Correctif :** les pagers natifs sont aussi supprimés selon leur emplacement, et un **pager XPLORer** les remplace sous la liste. Il reste synchronisé avec celui du haut et remonte en haut de la liste après un changement de page.
+**Fix:** native pagers are also removed by location, and an **XPLORer pager** replaces the bottom one. It stays in sync with the top one and scrolls back up to the list after a page change.
 
-| Pager XPLORer sous la liste | Résultat : page 2 de la recherche, sans rechargement |
+| XPLORer pager below the list | Result: page 2 of the search, no reload |
 |---|---|
-| ![Pager en bas de liste](docs/img/pager-bas.png) | ![Recherche LTI, page 2](docs/img/recherche-page2.png) |
+| ![Bottom pager](docs/img/pager-bas.png) | ![LTI search, page 2](docs/img/recherche-page2.png) |
 
-### 2. Menus qui se referment aussitôt, redirection vers une page d'erreur
+### 2. Dropdowns closing instantly, redirects to an error page
 
-**Symptôme** (ticket [#132](https://github.com/dolkensp/HangarXPLOR/issues/132) chez l'auteur d'origine) : un menu déroulant s'ouvre puis se referme immédiatement. Plus rarement, la page part vers `/en/account/10`, une page d'erreur. Le problème va et vient d'un chargement à l'autre.
+**Symptom** (upstream issue [#132](https://github.com/dolkensp/HangarXPLOR/issues/132)): a dropdown opens and closes immediately. Less often, the page goes to `/en/account/10`, an error page. It comes and goes from one load to the next.
 
-**Cause :** au démarrage, le script du site (`RSI.Common.init`) :
-- attache son propre widget `SelectList` à **tous** les éléments `.js-selectlist` de la page, donc les menus sont basculés deux fois ;
-- redirige vers la valeur de tout `<input>` modifié dans un `.js-pager`, ce qui transforme le choix « 10 per page » en `/en/account/10`.
+**Cause:** when the page starts, the site's own script (`RSI.Common.init`):
+- attaches its own `SelectList` widget to **every** `.js-selectlist` on the page, so dropdowns get toggled twice;
+- navigates to the value of any `<input>` changed inside a `.js-pager`, which turns the "10 per page" choice into `/en/account/10`.
 
-Les contrôles XPLORer réutilisaient ces classes. Si l'interface de l'extension est dessinée **avant** cette initialisation, ce qui arrive souvent quand le hangar vient du cache, RSI la capture.
+XPLORer's controls reused these classes. When the extension draws its interface **before** that init runs, which often happens when the hangar comes from cache, RSI hijacks it.
 
 ```mermaid
 sequenceDiagram
     participant X as HangarXPLOR
     participant R as RSI.Common.init
-    X->>X: dessine ses menus (.js-selectlist) et son pager (.js-pager)
-    R->>X: bindSelectLists('body') : SelectList attaché aux menus XPLORer
-    R->>X: change() sur l'input « 10 » du pager
+    X->>X: draws its dropdowns (.js-selectlist) and pager (.js-pager)
+    R->>X: bindSelectLists('body'): SelectList attached to XPLORer's dropdowns
+    R->>X: change() on the pager's "10" input
     R-->>R: window.location = "10" → /en/account/10
 ```
 
-**Correctif :** les contrôles XPLORer n'utilisent plus `js-selectlist` ni `js-pager`. Ces classes ne servent qu'aux scripts RSI, aucun style de l'extension n'en dépend.
+**Fix:** XPLORer's controls no longer use `js-selectlist` or `js-pager`. Those classes only serve as hooks for RSI's scripts; none of the extension's styles depend on them.
 
-### 3. Vaisseaux « non identifiés » ou confondus avec leur version de base
+### 3. Ships "unidentified" or mistaken for their base version
 
-**Symptôme** (une quinzaine de tickets chez l'auteur d'origine, dont [#118](https://github.com/dolkensp/HangarXPLOR/issues/118), [#124](https://github.com/dolkensp/HangarXPLOR/issues/124), [#137](https://github.com/dolkensp/HangarXPLOR/issues/137), [#150](https://github.com/dolkensp/HangarXPLOR/issues/150)) : dans les exports, des vaisseaux sortent « *Please report this ship to the plugin developers* ». Sous Firefox, Sabre Raven devient Sabre, un Mk II devient Mk I, Golem OX devient Golem…
+**Symptom** (about fifteen upstream issues, including [#118](https://github.com/dolkensp/HangarXPLOR/issues/118), [#124](https://github.com/dolkensp/HangarXPLOR/issues/124), [#137](https://github.com/dolkensp/HangarXPLOR/issues/137), [#150](https://github.com/dolkensp/HangarXPLOR/issues/150)): in exports, some ships come out as "*Please report this ship to the plugin developers*". On Firefox, Sabre Raven becomes Sabre, a Mk II becomes a Mk I, Golem OX becomes Golem…
 
-**Causes :**
-- **Tri incohérent.** L'extension trie la liste officielle des vaisseaux du nom le plus long au plus court, pour reconnaître « Sabre Raven » avant « Sabre ». Mais sa fonction de comparaison renvoyait « égal » dans certains cas, si bien que l'ordre dépendait de l'algorithme de tri du navigateur. Chrome et Opera tombaient juste par chance ; sous Firefox, 44 vaisseaux étaient reconnus comme leur version de base.
-- **Table d'export périmée.** 23 vaisseaux récents en étaient absents (Constellation Mk V Centaurus, M80, Pitbull, Starlite, Odin…). 7 autres ne pouvaient jamais être trouvés, parce que leur nom porte une espace en trop dans les données de RSI (Lynx, Nautilus, C8X Pisces Expedition…).
-- **Variantes de nom.** « Mk I » était trouvé à l'intérieur de « Mk II », et des titres comme « A.T.L.S. » ou « Dragonfly Star Kitten Edition » ne correspondaient à rien.
+**Causes:**
+- **Inconsistent sort.** The extension sorts the official ship list from longest to shortest name, so "Sabre Raven" is tried before "Sabre". But its comparator returned "equal" in some cases, so the order depended on the browser's sort algorithm. Chrome and Opera got it right by luck; on Firefox, 44 ships matched their base version.
+- **Stale export table.** 23 recent ships were missing (Constellation Mk V Centaurus, M80, Pitbull, Starlite, Odin…). 7 more could never be found, because their name carries a trailing space in RSI's data (Lynx, Nautilus, C8X Pisces Expedition…).
+- **Name variants.** "Mk I" was found inside "Mk II", and titles such as "A.T.L.S." or "Dragonfly Star Kitten Edition" matched nothing.
 
-**Correctifs :** tri stable, du plus long au plus court ; comparaison par mots entiers en ignorant la ponctuation ; table régénérée avec `scripts/refresh-ship-codes.js` (321 entrées) ; second essai sans les points et sans le suffixe « Edition ». Résultat : les 44 vaisseaux du hangar de test et 23 des 24 noms signalés dans les tickets sont reconnus, avec le même résultat quel que soit l'ordre de tri. Le dernier, « Heartseeker Mk II », n'existe pas dans les données de RSI.
+**Fixes:**
+- a stable longest-first sort;
+- whole-word matching that ignores punctuation;
+- a table regenerated with `scripts/refresh-ship-codes.js` (321 entries);
+- a second try without dots and without an "Edition" suffix.
 
-### 4. Objets sans catégorie, absents des filtres
+**Result:** the 44 ships of the test hangar and 23 of the 24 names reported in the issues are identified, the same way whatever the sort order. The last one, "Heartseeker Mk II", doesn't exist in RSI's data.
 
-**Symptôme** ([#116](https://github.com/dolkensp/HangarXPLOR/issues/116), [#80](https://github.com/dolkensp/HangarXPLOR/issues/80)) : des sets d'armure, des combinaisons ou des packs de peintures n'apparaissent dans aucun filtre (Equipment, Paints…).
+### 4. Uncategorized items missing from filters
 
-**Causes :**
-- RSI liste de nombreux objets **sans aucun type** (pièces d'armure, peintures de packs, hangars, décorations) : 58 pledges du hangar de test n'étaient composés que de tels objets.
-- Les filtres Equipment, Components et Decorations ne gardaient que les pledges ne contenant **qu'un seul** objet du type.
+**Symptom** ([#116](https://github.com/dolkensp/HangarXPLOR/issues/116), [#80](https://github.com/dolkensp/HangarXPLOR/issues/80)): armor sets, suits or paint packs don't appear under any filter (Equipment, Paints…).
 
-**Correctifs :** quand RSI n'en donne pas, le type est déduit du nom de l'objet (*Helmet, Core, Undersuit…* → équipement, *Paint, Livery* → peinture, *… Hangar* → hangar, *Model, Poster, Coin…* → décoration, *Repeater, Cannon…* → composant) ; et les filtres incluent les packs à plusieurs objets.
+**Causes:**
+- RSI lists many items with **no type at all**: armor pieces, paints in packs, hangars, decorations. 58 pledges of the test hangar were made only of such items.
+- The Equipment, Components and Decorations filters only kept pledges holding **a single** item of that type.
 
-### 5. Vignettes, titres et petits défauts
+**Fixes:**
+- When RSI gives no type, it is inferred from the item name:
+  - *Helmet, Core, Undersuit…* → equipment;
+  - *Paint, Livery* → paint;
+  - *… Hangar* → hangar;
+  - *Model, Poster, Coin…* → decoration;
+  - *Repeater, Cannon…* → component.
+- The filters now include multi-item packs.
 
-- **Vignettes avec peinture remplacées par l'image générique** ([#110](https://github.com/dolkensp/HangarXPLOR/issues/110), [#99](https://github.com/dolkensp/HangarXPLOR/issues/99)) : l'image de RSI montre souvent le vaisseau avec sa peinture. Elle n'est désormais remplacée que pour les pledges upgradés (CCU), dont l'image montre encore le vaisseau d'origine.
-- **Éléments effacés dans les titres** ([#147](https://github.com/dolkensp/HangarXPLOR/issues/147)) : en renommant un pledge, l'extension effaçait ce que RSI place dans le titre, comme le bouton « Upgrades » (historique des CCU) ou les tags d'accès au jeu. Seul le texte est maintenant remplacé.
-- Les décorations n'étaient plus étiquetées « Hangar decoration » mais « Hangar ».
-- Un seul pledge au HTML inattendu interrompait tout le chargement : il est maintenant ignoré, avec un avertissement en console.
-- « *Your hangar is empty* » s'affichait quand les filtres ne laissaient rien ; le message est désormais « *No items match the current filters.* ».
-- Retour en page 1 quand la recherche, le type ou un filtre rapide change.
+### 5. Thumbnails, titles and small defects
+
+- **Paint thumbnails replaced by the generic image** ([#110](https://github.com/dolkensp/HangarXPLOR/issues/110), [#99](https://github.com/dolkensp/HangarXPLOR/issues/99)): RSI's image often shows the ship with its paint. It is now replaced only for CCU'd pledges, whose image still shows the original ship.
+- **Elements wiped from titles** ([#147](https://github.com/dolkensp/HangarXPLOR/issues/147)): when renaming a pledge, the extension erased what RSI puts in the title, such as the "Upgrades" button (CCU history) or game access tags. Only the text is replaced now.
+- Decorations were relabelled "Hangar" instead of "Hangar decoration".
+- A single pledge with unexpected HTML stopped the whole load. It is now skipped, with a console warning.
+- "*Your hangar is empty*" was shown when the filters left nothing. The message is now "*No items match the current filters.*".
+- Changing the search, the type or a quick filter goes back to page 1.
 
 ---
 
-## Ce que cette édition ajoute
+## What this edition adds
 
-### Filtre « Coupons »
+### Coupons filter
 
-Les coupons de récompense d'abonnement (*Centurion 10 %*, *Imperator 20 %*…) étaient déjà reconnus, mais aucun filtre ne les affichait.
+Subscriber reward coupons (*Centurion 10%*, *Imperator 20%*…) were already recognized, but no filter showed them.
 
-| Menu des types avec « Coupons » | Filtre « Coupons » appliqué |
+| Type menu with "Coupons" | "Coupons" filter applied |
 |---|---|
-| ![Menu des types](docs/img/menu-types.png) | ![Filtre Coupons](docs/img/filtre-coupons.png) |
+| ![Type menu](docs/img/menu-types.png) | ![Coupons filter](docs/img/filtre-coupons.png) |
 
-### Page Buyback
+### Buyback page
 
-Reprise de la pull request [#139](https://github.com/dolkensp/HangarXPLOR/pull/139) de Drew Short, restée en attente chez l'auteur d'origine. La page des **pledges rachetables** reçoit la même interface que le hangar : tout est chargé d'un coup, avec filtres par type, tri, recherche, compteurs et exports CSV/JSON.
+Picks up pull request [#139](https://github.com/dolkensp/HangarXPLOR/pull/139) by Drew Short, still waiting upstream. The **buy-back pledges** page gets the same interface as the hangar: everything loaded at once, with type filters, sorting, search, counters and CSV/JSON exports.
 
-![Page Buyback](docs/img/buyback.png)
+![Buyback page](docs/img/buyback.png)
 
-Confrontée au vrai HTML de RSI, la PR d'origine avait plusieurs défauts, corrigés ici :
-- RSI ignore la taille de page demandée (`pagesize=50`), et la PR s'arrêtait après la première page : sur le banc, elle chargeait 10 pledges sur 14 ;
-- la date était toujours vide, car RSI l'intitule désormais « *Reclaim Date* » ;
-- la ligne « *No pledges available* » d'une page vide était comptée comme un pledge ;
-- certains compteurs devenaient « NaN » ;
-- son pager réintroduisait la classe `js-pager` piégée par RSI (voir le correctif 2) ;
-- son cache restait périmé toute la journée après un rachat ;
-- enfin, `src/manifest.json` n'avait pas été mis à jour : chargée depuis `src`, l'extension ne trouvait pas ses nouveaux scripts.
+Checked against RSI's real markup, the original PR had several issues, fixed here:
+- RSI ignores the requested page size (`pagesize=50`) and the PR stopped after the first page. On the test bench it loaded 10 pledges out of 14.
+- The date was always empty, because RSI now labels it "*Reclaim Date*".
+- The "*No pledges available*" line of an empty page was counted as a pledge.
+- Some counters turned into "NaN".
+- Its pager brought back the `js-pager` class that RSI hijacks (see fix 2).
+- Its cache stayed stale for the rest of the day after a buy-back.
+- `src/manifest.json` wasn't updated: loaded from `src`, the extension couldn't find its new scripts.
 
-### Export des CCU
+### CCU export
 
-Reprise de la pull request [#144](https://github.com/dolkensp/HangarXPLOR/pull/144) de Myles Berueda : deux boutons **CCUs CSV** et **CCUs JSON** exportent les upgrades (vaisseau de départ, vaisseau d'arrivée, prix, date…), à côté de **Ships CSV** et **Ships JSON**. Les libellés ont été raccourcis pour que le panneau flottant reste aussi étroit qu'avant.
+Picks up pull request [#144](https://github.com/dolkensp/HangarXPLOR/pull/144) by Myles Berueda. Two buttons, **CCUs CSV** and **CCUs JSON**, export upgrades (from ship, to ship, price, date…), next to **Ships CSV** and **Ships JSON**. The labels were shortened so the floating panel stays as narrow as before.
 
 ---
 
 ## Installation
 
-L'extension n'est pas publiée sur un store : on la charge en **mode développeur**. Elle fonctionne dans les navigateurs basés sur Chromium (Opera, Opera GX, Chrome, Edge, Brave).
+The extension isn't published on a store: you load it in **developer mode**. It works in Chromium-based browsers (Opera, Opera GX, Chrome, Edge, Brave).
 
 > [!IMPORTANT]
-> Désactivez d'abord la version officielle « Star Citizen Hangar XPLORer » si elle est installée. Sinon, les deux versions s'exécutent en même temps sur la page.
+> First disable the official "Star Citizen Hangar XPLORer" if you have it installed. Otherwise both versions run on the page at the same time.
 
-1. Récupérez le dépôt :
+1. Get the repository:
    ```bash
    git clone https://github.com/Sckriva/HangarXPLOR.git
    ```
-   Ou, sans git : bouton **Code → Download ZIP** sur la page GitHub, puis décompressez.
-2. Ouvrez la page des extensions :
-   | Navigateur | Adresse |
+   Or, without git: **Code → Download ZIP** on the GitHub page, then unzip it.
+2. Open the extensions page:
+   | Browser | Address |
    |---|---|
    | Opera / Opera GX | `opera://extensions` |
    | Chrome / Brave | `chrome://extensions` |
    | Edge | `edge://extensions` |
-3. Activez le **Mode développeur**.
-4. Cliquez sur **Charger l'extension non empaquetée** et choisissez le dossier **`src`** du dépôt.
-5. Ouvrez [My Hangar](https://robertsspaceindustries.com/account/pledges) ou [Buy Back Pledges](https://robertsspaceindustries.com/account/buy-back-pledges). Le premier chargement parcourt toutes les pages (comptez quelques secondes par page RSI), les suivants sortent du cache.
+3. Turn on **Developer mode**.
+4. Click **Load unpacked** and pick the repository's **`src`** folder.
+5. Open [My Hangar](https://robertsspaceindustries.com/account/pledges) or [Buy Back Pledges](https://robertsspaceindustries.com/account/buy-back-pledges). The first load walks through every page (allow a few seconds per RSI page); later visits come from the cache.
 
-**Mise à jour :** `git pull`, puis cliquez sur **Recharger** (↻) sur la carte de l'extension.
+**Updating:** `git pull`, then click **Reload** (↻) on the extension's card.
 
 > [!NOTE]
-> Une extension chargée de cette façon ne se met pas à jour toute seule. Ses réglages et son cache sont propres à cette installation et repartent de zéro par rapport à la version du store.
+> An extension loaded this way doesn't update itself. Its settings and cache belong to this install and start from scratch compared with the store version.
 
 <details>
-<summary><b>Construire les archives par navigateur (optionnel)</b></summary>
+<summary><b>Building per-browser packages (optional)</b></summary>
 
-Le script d'origine produit un `.zip` par navigateur dans `dist/` :
+The original build script creates one `.zip` per browser in `dist/`:
 
 ```bash
 npm install
 node build.js 3.17.192
 ```
 
-Voir [docs/build.md](docs/build.md) pour Firefox, Safari et la CI.
+See [docs/build.md](docs/build.md) for Firefox, Safari and CI.
 </details>
 
 ---
 
-## Utilisation
+## Usage
 
-| Élément | Comment s'en servir |
+| Control | How to use it |
 |---|---|
-| **Menu des types** | Restreint la liste à une catégorie : *All Ships*, *Upgrades*, *Coupons*… |
-| **Menu de tri** | *Pledge Date* (le plus récent d'abord), *Pledge Name*, *Pledge Value*. |
-| **Filtres rapides** | Trois états par clic : neutre → **inclure uniquement** (allumé) → **exclure** → neutre. *Free CCUs* exclut par défaut les upgrades à 0 $. |
-| **Recherche** | Tapez quelques lettres. La suggestion grisée se complète avec **Tab**. |
-| **Pagination** | Nombre d'éléments par page dans le menu ; numéros de page en haut et en bas de la liste. |
-| **Sélection** | Cliquez sur un pledge pour le sélectionner. Le panneau flottant affiche le total sélectionné, et le type *Selected* n'affiche que la sélection. |
-| **Panneau flottant** | Cliquez dessus pour basculer entre les montants (USD) et les compteurs (CCU, vaisseaux, packs). |
-| **Exports** | *Ships CSV* / *Ships JSON* (vaisseaux, format Hangar Transfer Format) et *CCUs CSV* / *CCUs JSON* (upgrades). Si des pledges sont sélectionnés, seule la sélection est exportée. |
-| **Page Buyback** | Mêmes principes : menu des types, tri (*Recent First*…), recherche, nombre par page, compteurs par catégorie et exports dans le panneau flottant. |
+| **Type menu** | Narrows the list to one category: *All Ships*, *Upgrades*, *Coupons*… |
+| **Sort menu** | *Pledge Date* (newest first), *Pledge Name*, *Pledge Value*. |
+| **Quick filters** | Three states per click: neutral → **only** (lit) → **exclude** → neutral. *Free CCUs* excludes $0 upgrades by default. |
+| **Search** | Type a few letters. Press **Tab** to accept the greyed-out suggestion. |
+| **Paging** | Items per page in the menu; page numbers above and below the list. |
+| **Selection** | Click a pledge to select it. The floating panel shows the selected total, and the *Selected* type shows only the selection. |
+| **Floating panel** | Click it to switch between amounts (USD) and counts (CCUs, ships, packages). |
+| **Exports** | *Ships CSV* / *Ships JSON* (ships, Hangar Transfer Format) and *CCUs CSV* / *CCUs JSON* (upgrades). If pledges are selected, only the selection is exported. |
+| **Buyback page** | Same principles: type menu, sorting (*Recent First*…), search, items per page, per-category counters and exports in the floating panel. |
 
-**Popup de l'extension** (icône dans la barre d'outils) :
+**Extension popup** (toolbar icon):
 
-| Réglage | Effet |
+| Setting | Effect |
 |---|---|
-| Hide Pledge ID | Masque le numéro `(123456)` en fin de nom. |
-| Hide Pledge Prefix | Masque le préfixe de type (`ship - `, `upgrade - `…). |
-| Hide Nicknames | Affiche le nom du vaisseau plutôt que le surnom que vous lui avez donné. |
-| Show Hangar Value | Panneau flottant en montants plutôt qu'en compteurs. |
-| Clear Cache | Force un rechargement complet du hangar depuis RSI. |
+| Hide Pledge ID | Hides the `(123456)` number at the end of names. |
+| Hide Pledge Prefix | Hides the type prefix (`ship - `, `upgrade - `…). |
+| Hide Nicknames | Shows the ship's name instead of the nickname you gave it. |
+| Show Hangar Value | Floating panel in amounts rather than counts. |
+| Clear Cache | Forces a full reload of the hangar from RSI. |
 
 ---
 
-## Fonctionnement technique
+## How it works
 
-L'extension injecte ses scripts **dans la page RSI elle-même**, pour réutiliser son jQuery et son API. Ces scripts n'ont pas accès aux API du navigateur, donc un petit pont `postMessage` relaie le stockage.
+The extension injects its scripts **into the RSI page itself**, to reuse the page's jQuery and API. Those scripts can't reach the browser's extension APIs, so a small `postMessage` bridge relays storage.
 
 ```mermaid
 flowchart LR
-    subgraph EXT["Contexte de l'extension"]
+    subgraph EXT["Extension context"]
         L["content_scripts/loader.js"]
-        ST[("chrome.storage<br/>sync : réglages<br/>local : cache")]
+        ST[("chrome.storage<br/>sync: settings<br/>local: cache")]
     end
-    subgraph PAGE["Page My Hangar (monde de la page)"]
-        J["jQuery 1.9 et RSI.Api<br/>(fournis par RSI)"]
+    subgraph PAGE["My Hangar page (page world)"]
+        J["jQuery 1.9 and RSI.Api<br/>(provided by RSI)"]
         H["web_resources/HangarXPLOR.*.js"]
         SH["shims.chrome.storage.js"]
     end
     RSI[("robertsspaceindustries.com")]
 
-    L -- "injecte les scripts" --> H
-    H -- "utilise" --> J
+    L -- "injects scripts" --> H
+    H -- "uses" --> J
     H -- "GET /account/pledges?page=N<br/>GET /ship-matrix/index" --> RSI
     H <--> SH
     SH <-- "postMessage" --> L
     L <--> ST
 ```
 
-**Cycle de chargement :**
+**Load cycle:**
 
 ```mermaid
 flowchart TD
-    A["Chargement de My Hangar"] --> B["Ship matrix : noms et vignettes officiels"]
-    B --> C["Réglages (chrome.storage.sync)"]
-    C --> D{"Cache valide ?"}
-    D -- oui --> E["Parse des pledges depuis le cache"]
-    D -- non --> F["Chargement page par page<br/>(ralenti après 50 pages, reprise sur erreur 429)"]
-    F --> G["Parse de chaque pledge :<br/>type, LTI, melt, upgrade…"]
-    G --> H["Sauvegarde du cache"]
-    E --> I["Interface : filtres, tri, recherche, pagination"]
+    A["My Hangar loads"] --> B["Ship matrix: official names and thumbnails"]
+    B --> C["Settings (chrome.storage.sync)"]
+    C --> D{"Valid cache?"}
+    D -- yes --> E["Parse pledges from cache"]
+    D -- no --> F["Load page by page<br/>(throttled after 50 pages, retry on HTTP 429)"]
+    F --> G["Parse each pledge:<br/>type, LTI, melt, upgrade…"]
+    G --> H["Save cache"]
+    E --> I["Interface: filters, sorting, search, paging"]
     H --> I
 ```
 
-Documentation détaillée de l'auteur d'origine, en anglais : [architecture](docs/architecture.md), [référence des fichiers](docs/file-reference.md), [construction](docs/build.md).
+The original author's detailed documentation: [architecture](docs/architecture.md), [file reference](docs/file-reference.md), [build](docs/build.md).
 
 ---
 
-## Banc de test
+## Test bench
 
-`tools/harness/` reproduit les pages **My Hangar** et **Buy Back Pledges** en local, sans compte RSI et sans toucher au vrai hangar. Il utilise **les vrais scripts et le vrai CSS de RSI**, avec des pledges factices calqués sur le HTML réel de RSI (octobre 2026) : vaisseaux LTI, vaisseau upgradé avec son bouton « Upgrades », vaisseaux avec image de peinture, CCU, packs dont les objets n'ont pas de type, décorations, coupons, page Buyback paginée. C'est avec ce banc qu'ont été reproduits et testés les correctifs ci-dessus, et réalisées les captures de ce README.
+`tools/harness/` reproduces the **My Hangar** and **Buy Back Pledges** pages locally, with no RSI account and without touching a real hangar. It uses **RSI's real scripts and CSS**, with made-up pledges modelled on RSI's real markup (October 2026):
+- LTI ships, and a CCU'd ship with its "Upgrades" button;
+- ships with a paint image;
+- CCUs and packs whose items have no type;
+- decorations and coupons;
+- a paginated buyback page.
+
+This bench is where the fixes above were reproduced and tested, and where this README's screenshots were taken.
 
 ```bash
-python tools/harness/fetch_rsi.py      # une fois : télécharge les fichiers publics de RSI dans tools/harness/rsi/
-python tools/harness/server.py 8791    # démarre la fausse page Hangar
+python tools/harness/fetch_rsi.py      # once: downloads RSI's public files into tools/harness/rsi/
+python tools/harness/server.py 8791    # starts the fake hangar page
 ```
 
-Ouvrez ensuite <http://localhost:8791/en/account/pledges?page=1> ou <http://localhost:8791/en/account/buy-back-pledges?page=1>.
+Then open <http://localhost:8791/en/account/pledges?page=1> or <http://localhost:8791/en/account/buy-back-pledges?page=1>.
 
-| Paramètre d'URL | Effet |
+| URL parameter | Effect |
 |---|---|
-| `ext=src` | Dossier de l'extension à injecter, relatif à la racine du dépôt (`src` par défaut). Mémorisé par cookie, donc les liens des pagers natifs le gardent. |
-| `style=plain` | Sans le CSS de RSI : plus rapide, lisible hors ligne. |
-| `page=N` | Page RSI demandée : 5 pages factices de 10 pledges pour le hangar, 2 pages pour le Buyback. |
+| `ext=src` | Extension folder to inject, relative to the repository root (`src` by default). Remembered in a cookie, so native pager links keep it. |
+| `style=plain` | Without RSI's CSS: faster, and readable offline. |
+| `page=N` | RSI page requested: 5 made-up pages of 10 pledges for the hangar, 2 pages for the buyback page. |
 
 > [!NOTE]
-> Les fichiers de RSI ne sont **pas** versionnés (`tools/harness/rsi/` est ignoré par git). Les noms des bundles `rsi.core` et `rsi.account` contiennent un numéro de build. Si RSI le change, `fetch_rsi.py` explique comment lui passer les nouvelles adresses.
+> RSI's files are **not** versioned (`tools/harness/rsi/` is git-ignored). The `rsi.core` and `rsi.account` bundle names carry a build number. If RSI changes it, `fetch_rsi.py` explains how to pass the new addresses.
 
-Pour comparer avec une autre version, extrayez-la dans un dossier du dépôt avec `git worktree add .wt-release release`, puis ouvrez `?ext=.wt-release/src`.
+To compare with another version, check it out into a folder of the repository with `git worktree add .wt-release release`, then open `?ext=.wt-release/src`.
 
-`POST /capture?name=X` enregistre le corps de la requête dans `tools/harness/private/X.html`, un dossier ignoré par git, pour transformer une vraie page en données de test. Le navigateur peut toutefois bloquer les requêtes d'un site public vers `localhost` (protection du réseau local).
+`POST /capture?name=X` saves the request body to `tools/harness/private/X.html`, a git-ignored folder, to turn a real page into test data. Browsers may block requests from a public site to `localhost`, though (local network protection).
 
 ---
 
-## Organisation du dépôt
+## Repository layout
 
 ```text
 .
-├── src/                      Extension (dossier à charger dans le navigateur)
-│   ├── manifest.json         Manifeste MV3 complet
-│   ├── content_scripts/      loader.js : injection des scripts et pont de stockage
-│   ├── web_resources/        Code de l'interface (HangarXPLOR.*.js, CSS, Fuse.js, ship-codes.json)
-│   ├── ui_resources/         Popup de réglages
-│   └── manifest.*.json       Fragments par navigateur, utilisés par build.js
-├── tools/harness/            Banc de test local (fausses pages My Hangar et Buyback)
-├── scripts/                  refresh-ship-codes.js : régénère ship-codes.json depuis le ship matrix de RSI
-├── docs/                     Documentation technique et captures (docs/img/)
-├── build.js                  Construction des archives par navigateur
-└── README.md
+├── src/                      The extension (folder to load in the browser)
+│   ├── manifest.json         Complete MV3 manifest
+│   ├── content_scripts/      loader.js: script injection and storage bridge
+│   ├── web_resources/        Interface code (HangarXPLOR.*.js, CSS, Fuse.js, ship-codes.json)
+│   ├── ui_resources/         Settings popup
+│   └── manifest.*.json       Per-browser fragments, used by build.js
+├── tools/harness/            Local test bench (fake My Hangar and buyback pages)
+├── scripts/                  refresh-ship-codes.js: regenerates ship-codes.json from RSI's ship matrix
+├── docs/                     Technical documentation and screenshots (docs/img/)
+├── build.js                  Per-browser package build
+├── README.md                 This page (English)
+└── README.fr.md              French version
 ```
 
-| Branche | Rôle |
+| Branch | Purpose |
 |---|---|
-| **`main`** | Branche de travail : code d'origine + correctifs + PR #139 et #144 reprises + filtre Coupons + banc de test. |
-| `release` | Copie exacte de la branche `release` de l'auteur d'origine, jamais modifiée ici. |
-| `fix/pager-reload-and-rsi-widgets`, `fix/ship-identification`, `fix/kindless-items-thumbnails-titles`, `feature/coupons-filter` | Chaque correctif seul, basé sur `release`, tel que proposé à l'auteur d'origine (#148, #151, #152, #153). |
-| `archive/v1` | Ancienne version (Manifest V2) de l'auteur d'origine. |
+| **`main`** | Working branch: original code, fixes, PRs #139 and #144, Coupons filter, test bench. |
+| `release` | Exact copy of the upstream `release` branch, never modified here. |
+| `fix/pager-reload-and-rsi-widgets`, `fix/ship-identification`, `fix/kindless-items-thumbnails-titles`, `feature/coupons-filter` | Each fix on its own, based on `release`, as proposed upstream (#148, #151, #152, #153). |
+| `archive/v1` | Older upstream version (Manifest V2). |
 
-**Récupérer les nouveautés de l'auteur d'origine** (remote `origin` = `dolkensp/HangarXPLOR`) :
+**Getting upstream changes** (remote `origin` = `dolkensp/HangarXPLOR`):
 
 ```bash
 git fetch origin
@@ -334,34 +359,36 @@ git switch release && git merge --ff-only origin/release
 git switch main && git merge release
 ```
 
-**Mettre à jour la liste des vaisseaux** quand RSI en publie de nouveaux : `node scripts/refresh-ship-codes.js`, puis committer `src/web_resources/ship-codes.json`.
+**Updating the ship list** when RSI releases new ships: `node scripts/refresh-ship-codes.js`, then commit `src/web_resources/ship-codes.json`.
 
 ---
 
-## Contribution au projet d'origine
+## Contributing upstream
 
-Le but est que ces correctifs reviennent dans le projet d'origine. Ils lui sont proposés en pull requests courtes et indépendantes, qu'il peut accepter une à une, dans n'importe quel ordre :
+The goal is for these fixes to go back into the original project. They are proposed as short, independent pull requests that can be merged one at a time, in any order:
 
-| Pull request | Contenu | Correctifs de ce README |
+| Pull request | Content | Fixes in this README |
 |---|---|---|
-| [#148](https://github.com/dolkensp/HangarXPLOR/pull/148) | Pager du bas qui recharge la page, menus capturés par RSI | 1 et 2 |
-| [#151](https://github.com/dolkensp/HangarXPLOR/pull/151) | Identification des vaisseaux, table d'export régénérée | 3 |
-| [#152](https://github.com/dolkensp/HangarXPLOR/pull/152) | Objets sans type, filtres, vignettes, éléments des titres | 4 et 5 |
-| [#153](https://github.com/dolkensp/HangarXPLOR/pull/153) | Filtre Coupons | ajout |
+| [#148](https://github.com/dolkensp/HangarXPLOR/pull/148) | Bottom pager reloading the page, dropdowns hijacked by RSI | 1 and 2 |
+| [#151](https://github.com/dolkensp/HangarXPLOR/pull/151) | Ship identification, regenerated export table | 3 |
+| [#152](https://github.com/dolkensp/HangarXPLOR/pull/152) | Untyped items, filters, thumbnails, title elements | 4 and 5 |
+| [#153](https://github.com/dolkensp/HangarXPLOR/pull/153) | Coupons filter | addition |
 
-Les corrections de la page Buyback ont été proposées à Drew Short, l'auteur de la PR [#139](https://github.com/dolkensp/HangarXPLOR/pull/139), en commentaire de celle-ci, pour qu'il puisse les intégrer à son travail. L'export des CCU ([#144](https://github.com/dolkensp/HangarXPLOR/pull/144)) n'a besoin d'aucune correction.
+The buyback page fixes were offered to Drew Short, author of PR [#139](https://github.com/dolkensp/HangarXPLOR/pull/139), in a comment on it, so he can fold them into his work. The CCU export ([#144](https://github.com/dolkensp/HangarXPLOR/pull/144)) needs no changes.
 
-Seul le banc de test reste propre à cette édition.
+Only the test bench is specific to this edition.
 
-Une analyse des PR ouvertes chez l'auteur a écarté [#145](https://github.com/dolkensp/HangarXPLOR/pull/145) (« trusted sites ») : elle enverrait le contenu du hangar à des sites tiers et demanderait une permission sur tous les sites. Les plus anciennes (#71, #73, #77, #103) sont obsolètes ou en conflit complet avec le code actuel.
+A review of the open upstream PRs set aside a few:
+- [#145](https://github.com/dolkensp/HangarXPLOR/pull/145) ("trusted sites") would send the hangar's content to third-party sites and ask for permission on every site.
+- The oldest ones (#71, #73, #77, #103) are obsolete or conflict entirely with the current code.
 
 ---
 
-## Crédits et licence
+## Credits and license
 
-- **HangarXPLOR** : © 2015 Peter Dolkens ([/u/alluran](https://www.reddit.com/user/alluran)) et contributeurs, [dolkensp/HangarXPLOR](https://github.com/dolkensp/HangarXPLOR).
-- **Page Buyback** : Drew Short ([PR #139](https://github.com/dolkensp/HangarXPLOR/pull/139)). **Export des CCU** : Myles Berueda ([PR #144](https://github.com/dolkensp/HangarXPLOR/pull/144)).
-- **Cette édition** : correctifs de compatibilité, intégration et corrections des PR #139 et #144, filtre Coupons et banc de test, par Sckriva.
-- Distribué sous **licence MIT** : voir [LICENSE](LICENSE).
+- **HangarXPLOR**: © 2015 Peter Dolkens ([/u/alluran](https://www.reddit.com/user/alluran)) and contributors, [dolkensp/HangarXPLOR](https://github.com/dolkensp/HangarXPLOR).
+- **Buyback page**: Drew Short ([PR #139](https://github.com/dolkensp/HangarXPLOR/pull/139)). **CCU export**: Myles Berueda ([PR #144](https://github.com/dolkensp/HangarXPLOR/pull/144)).
+- **This edition**: compatibility fixes, integration and fixes of PRs #139 and #144, Coupons filter and test bench, by Sckriva.
+- Released under the **MIT license**: see [LICENSE](LICENSE).
 
-*Star Citizen®, Roberts Space Industries® et Cloud Imperium® sont des marques de Cloud Imperium Rights LLC. Ce projet de fan n'est ni affilié à Cloud Imperium Games ni approuvé par cette société.*
+*Star Citizen®, Roberts Space Industries® and Cloud Imperium® are trademarks of Cloud Imperium Rights LLC. This fan project is not affiliated with or endorsed by Cloud Imperium Games.*
