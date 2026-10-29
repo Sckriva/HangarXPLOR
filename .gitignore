@@ -213,3 +213,4 @@ xcuserdata
 tools/harness/rsi/
 # Harness: real pages captured from a live account (personal data, never versioned)
 tools/harness/private/
+__pycache__/

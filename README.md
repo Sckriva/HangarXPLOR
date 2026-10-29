@@ -1,7 +1,7 @@
 # HangarXPLOR — édition corrigée
 
 > Extension de navigateur qui transforme la page **My Hangar** de [robertsspaceindustries.com](https://robertsspaceindustries.com/account/pledges) : tout le hangar chargé d'un coup, filtres avancés, recherche floue, valeurs de melt et exports.
-> Ce dépôt est un fork maintenu de [dolkensp/HangarXPLOR](https://github.com/dolkensp/HangarXPLOR). Il corrige la pagination cassée par les derniers changements du site RSI et ajoute un filtre **Coupons**.
+> Ce dépôt est un fork maintenu de [dolkensp/HangarXPLOR](https://github.com/dolkensp/HangarXPLOR), dont l'auteur n'a plus rien publié depuis avril 2026. Il corrige ce que les changements du site RSI ont cassé (pagination, menus, identification des vaisseaux, classement des objets), reprend deux contributions restées en attente chez l'auteur (page **Buyback**, export des **CCU**) et ajoute un filtre **Coupons**.
 
 ![HangarXPLOR sur la page My Hangar](docs/img/apercu.png)
 
@@ -13,6 +13,7 @@
 
 - [Fonctionnalités](#fonctionnalités)
 - [Ce que cette édition corrige](#ce-que-cette-édition-corrige)
+- [Ce que cette édition ajoute](#ce-que-cette-édition-ajoute)
 - [Installation](#installation)
 - [Utilisation](#utilisation)
 - [Fonctionnement technique](#fonctionnement-technique)
@@ -29,20 +30,21 @@
 |---|---|---|
 | ⚡ | **Hangar complet en une fois** | Toutes les pages du hangar sont chargées en arrière-plan, puis affichées et triées ensemble. |
 | 🔎 | **Recherche floue** | Tolère les fautes de frappe (Fuse.js). Une suggestion s'affiche, **Tab** la complète. |
-| 🗂️ | **Filtre par type** | Vaisseaux, packs de jeu, combos, peintures, composants, équipement, upgrades, **coupons**, décorations, sélection. |
+| 🗂️ | **Filtre par type** | Vaisseaux, packs de jeu, combos, peintures, composants, équipement, upgrades, **coupons**, décorations, sélection. Les objets que RSI laisse sans type (armures, peintures de packs…) sont classés d'après leur nom. |
 | 🏷️ | **Filtres rapides** | LTI, Warbond, Giftable, Meltable, Upgraded, Valuable, Reward, Free CCUs. |
 | ↕️ | **Tri** | Par date d'achat, par nom ou par valeur. |
 | 📄 | **Pagination** | 10, 20, 50, 100 ou tout le hangar par page, avec un pager en haut **et en bas** de la liste. |
 | 💲 | **Valeurs** | Valeur de melt et pledge d'origine sous chaque élément. Panneau flottant avec la dépense totale et le total de la sélection. |
-| ✈️ | **Noms et vignettes corrigés** | Les vaisseaux upgradés (CCU) affichent leur vrai nom et la bonne image, tirés du *ship matrix* officiel. |
+| ✈️ | **Noms et vignettes corrigés** | Les vaisseaux upgradés (CCU) affichent leur vrai nom et l'image du vaisseau obtenu, tirés du *ship matrix* officiel. Les autres gardent l'image de RSI, peinture comprise. |
 | 💾 | **Cache** | Le hangar est mis en cache dans le navigateur : les visites suivantes s'affichent instantanément. |
-| 📤 | **Exports** | `shiplist.csv` et `shiplist.json` au format [Hangar Transfer Format](https://docs.starcitizen.fans/), pour d'autres outils. |
+| 📤 | **Exports** | Vaisseaux (`shiplist.csv` / `.json`, au format [Hangar Transfer Format](https://docs.starcitizen.fans/)) et CCU (`upgradelist.csv` / `.json`), pour d'autres outils. |
+| ♻️ | **Page Buyback** | Même interface sur la page des pledges rachetables : tout chargé d'un coup, filtres, tri, recherche, compteurs, exports. |
 
 ---
 
 ## Ce que cette édition corrige
 
-Le code d'origine fonctionnait, mais **RSI a modifié sa page Hangar** et deux comportements se sont cassés. Les deux sont corrigés ici et proposés à l'auteur d'origine (voir [Contribution](#contribution-au-projet-dorigine)).
+Le code d'origine fonctionnait, mais **RSI a modifié sa page Hangar** et plusieurs comportements se sont cassés. Chaque correctif ci-dessous a été **vérifié sur un vrai hangar de 531 pledges** (en lecture seule), puis reproduit et testé sur le [banc de test](#banc-de-test). Les correctifs 1 et 2 sont aussi proposés à l'auteur d'origine (voir [Contribution](#contribution-au-projet-dorigine)).
 
 ### 1. La page 2 réaffichait la page 1 et la recherche disparaissait
 
@@ -94,14 +96,66 @@ sequenceDiagram
 
 **Correctif :** les contrôles XPLORer n'utilisent plus `js-selectlist` ni `js-pager`. Ces classes ne servent qu'aux scripts RSI, aucun style de l'extension n'en dépend.
 
-### 3. Petites améliorations
+### 3. Vaisseaux « non identifiés » ou confondus avec leur version de base
 
-- **Filtre « Coupons »** : les coupons de récompense d'abonnement (*Centurion 10 %*, *Imperator 20 %*…) étaient déjà reconnus, mais aucun filtre ne les affichait.
-- **Retour en page 1** quand la recherche, le type ou un filtre rapide change : on ne se retrouve plus en page 3 d'une liste qui n'en a qu'une.
+**Symptôme** (une quinzaine de tickets chez l'auteur d'origine, dont [#118](https://github.com/dolkensp/HangarXPLOR/issues/118), [#124](https://github.com/dolkensp/HangarXPLOR/issues/124), [#137](https://github.com/dolkensp/HangarXPLOR/issues/137), [#150](https://github.com/dolkensp/HangarXPLOR/issues/150)) : dans les exports, des vaisseaux sortent « *Please report this ship to the plugin developers* ». Sous Firefox, Sabre Raven devient Sabre, un Mk II devient Mk I, Golem OX devient Golem…
+
+**Causes :**
+- **Tri incohérent.** L'extension trie la liste officielle des vaisseaux du nom le plus long au plus court, pour reconnaître « Sabre Raven » avant « Sabre ». Mais sa fonction de comparaison renvoyait « égal » dans certains cas, si bien que l'ordre dépendait de l'algorithme de tri du navigateur. Chrome et Opera tombaient juste par chance ; sous Firefox, 44 vaisseaux étaient reconnus comme leur version de base.
+- **Table d'export périmée.** 23 vaisseaux récents en étaient absents (Constellation Mk V Centaurus, M80, Pitbull, Starlite, Odin…). 7 autres ne pouvaient jamais être trouvés, parce que leur nom porte une espace en trop dans les données de RSI (Lynx, Nautilus, C8X Pisces Expedition…).
+- **Variantes de nom.** « Mk I » était trouvé à l'intérieur de « Mk II », et des titres comme « A.T.L.S. » ou « Dragonfly Star Kitten Edition » ne correspondaient à rien.
+
+**Correctifs :** tri stable, du plus long au plus court ; comparaison par mots entiers en ignorant la ponctuation ; table régénérée avec `scripts/refresh-ship-codes.js` (321 entrées) ; second essai sans les points et sans le suffixe « Edition ». Résultat : les 44 vaisseaux du hangar de test et 23 des 24 noms signalés dans les tickets sont reconnus, avec le même résultat quel que soit l'ordre de tri. Le dernier, « Heartseeker Mk II », n'existe pas dans les données de RSI.
+
+### 4. Objets sans catégorie, absents des filtres
+
+**Symptôme** ([#116](https://github.com/dolkensp/HangarXPLOR/issues/116), [#80](https://github.com/dolkensp/HangarXPLOR/issues/80)) : des sets d'armure, des combinaisons ou des packs de peintures n'apparaissent dans aucun filtre (Equipment, Paints…).
+
+**Causes :**
+- RSI liste de nombreux objets **sans aucun type** (pièces d'armure, peintures de packs, hangars, décorations) : 58 pledges du hangar de test n'étaient composés que de tels objets.
+- Les filtres Equipment, Components et Decorations ne gardaient que les pledges ne contenant **qu'un seul** objet du type.
+
+**Correctifs :** quand RSI n'en donne pas, le type est déduit du nom de l'objet (*Helmet, Core, Undersuit…* → équipement, *Paint, Livery* → peinture, *… Hangar* → hangar, *Model, Poster, Coin…* → décoration, *Repeater, Cannon…* → composant) ; et les filtres incluent les packs à plusieurs objets.
+
+### 5. Vignettes, titres et petits défauts
+
+- **Vignettes avec peinture remplacées par l'image générique** ([#110](https://github.com/dolkensp/HangarXPLOR/issues/110), [#99](https://github.com/dolkensp/HangarXPLOR/issues/99)) : l'image de RSI montre souvent le vaisseau avec sa peinture. Elle n'est désormais remplacée que pour les pledges upgradés (CCU), dont l'image montre encore le vaisseau d'origine.
+- **Éléments effacés dans les titres** ([#147](https://github.com/dolkensp/HangarXPLOR/issues/147)) : en renommant un pledge, l'extension effaçait ce que RSI place dans le titre, comme le bouton « Upgrades » (historique des CCU) ou les tags d'accès au jeu. Seul le texte est maintenant remplacé.
+- Les décorations n'étaient plus étiquetées « Hangar decoration » mais « Hangar ».
+- Un seul pledge au HTML inattendu interrompait tout le chargement : il est maintenant ignoré, avec un avertissement en console.
+- « *Your hangar is empty* » s'affichait quand les filtres ne laissaient rien ; le message est désormais « *No items match the current filters.* ».
+- Retour en page 1 quand la recherche, le type ou un filtre rapide change.
+
+---
+
+## Ce que cette édition ajoute
+
+### Filtre « Coupons »
+
+Les coupons de récompense d'abonnement (*Centurion 10 %*, *Imperator 20 %*…) étaient déjà reconnus, mais aucun filtre ne les affichait.
 
 | Menu des types avec « Coupons » | Filtre « Coupons » appliqué |
 |---|---|
 | ![Menu des types](docs/img/menu-types.png) | ![Filtre Coupons](docs/img/filtre-coupons.png) |
+
+### Page Buyback
+
+Reprise de la pull request [#139](https://github.com/dolkensp/HangarXPLOR/pull/139) de Drew Short, restée en attente chez l'auteur d'origine. La page des **pledges rachetables** reçoit la même interface que le hangar : tout est chargé d'un coup, avec filtres par type, tri, recherche, compteurs et exports CSV/JSON.
+
+![Page Buyback](docs/img/buyback.png)
+
+Confrontée au vrai HTML de RSI, la PR d'origine avait plusieurs défauts, corrigés ici :
+- RSI ignore la taille de page demandée (`pagesize=50`), et la PR s'arrêtait après la première page : sur le banc, elle chargeait 10 pledges sur 14 ;
+- la date était toujours vide, car RSI l'intitule désormais « *Reclaim Date* » ;
+- la ligne « *No pledges available* » d'une page vide était comptée comme un pledge ;
+- certains compteurs devenaient « NaN » ;
+- son pager réintroduisait la classe `js-pager` piégée par RSI (voir le correctif 2) ;
+- son cache restait périmé toute la journée après un rachat ;
+- enfin, `src/manifest.json` n'avait pas été mis à jour : chargée depuis `src`, l'extension ne trouvait pas ses nouveaux scripts.
+
+### Export des CCU
+
+Reprise de la pull request [#144](https://github.com/dolkensp/HangarXPLOR/pull/144) de Myles Berueda : deux boutons **CCUs CSV** et **CCUs JSON** exportent les upgrades (vaisseau de départ, vaisseau d'arrivée, prix, date…), à côté de **Ships CSV** et **Ships JSON**. Les libellés ont été raccourcis pour que le panneau flottant reste aussi étroit qu'avant.
 
 ---
 
@@ -124,7 +178,7 @@ L'extension n'est pas publiée sur un store : on la charge en **mode développeu
    | Edge | `edge://extensions` |
 3. Activez le **Mode développeur**.
 4. Cliquez sur **Charger l'extension non empaquetée** et choisissez le dossier **`src`** du dépôt.
-5. Ouvrez [My Hangar](https://robertsspaceindustries.com/account/pledges). Le premier chargement parcourt tout le hangar (comptez quelques secondes par page RSI), les suivants sortent du cache.
+5. Ouvrez [My Hangar](https://robertsspaceindustries.com/account/pledges) ou [Buy Back Pledges](https://robertsspaceindustries.com/account/buy-back-pledges). Le premier chargement parcourt toutes les pages (comptez quelques secondes par page RSI), les suivants sortent du cache.
 
 **Mise à jour :** `git pull`, puis cliquez sur **Recharger** (↻) sur la carte de l'extension.
 
@@ -157,7 +211,8 @@ Voir [docs/build.md](docs/build.md) pour Firefox, Safari et la CI.
 | **Pagination** | Nombre d'éléments par page dans le menu ; numéros de page en haut et en bas de la liste. |
 | **Sélection** | Cliquez sur un pledge pour le sélectionner. Le panneau flottant affiche le total sélectionné, et le type *Selected* n'affiche que la sélection. |
 | **Panneau flottant** | Cliquez dessus pour basculer entre les montants (USD) et les compteurs (CCU, vaisseaux, packs). |
-| **Exports** | *Download CSV* et *Download JSON* (format Hangar Transfer Format). |
+| **Exports** | *Ships CSV* / *Ships JSON* (vaisseaux, format Hangar Transfer Format) et *CCUs CSV* / *CCUs JSON* (upgrades). Si des pledges sont sélectionnés, seule la sélection est exportée. |
+| **Page Buyback** | Mêmes principes : menu des types, tri (*Recent First*…), recherche, nombre par page, compteurs par catégorie et exports dans le panneau flottant. |
 
 **Popup de l'extension** (icône dans la barre d'outils) :
 
@@ -217,25 +272,27 @@ Documentation détaillée de l'auteur d'origine, en anglais : [architecture](doc
 
 ## Banc de test
 
-`tools/harness/` reproduit la page **My Hangar** en local, sans compte RSI et sans toucher au vrai hangar. Elle utilise **les vrais scripts et le vrai CSS de RSI** et des pledges factices : vaisseaux, LTI, upgrades, peintures, décorations, coupons. C'est avec ce banc qu'ont été reproduits les deux bugs ci-dessus, et réalisées les captures de ce README.
+`tools/harness/` reproduit les pages **My Hangar** et **Buy Back Pledges** en local, sans compte RSI et sans toucher au vrai hangar. Il utilise **les vrais scripts et le vrai CSS de RSI**, avec des pledges factices calqués sur le HTML réel de RSI (octobre 2026) : vaisseaux LTI, vaisseau upgradé avec son bouton « Upgrades », vaisseaux avec image de peinture, CCU, packs dont les objets n'ont pas de type, décorations, coupons, page Buyback paginée. C'est avec ce banc qu'ont été reproduits et testés les correctifs ci-dessus, et réalisées les captures de ce README.
 
 ```bash
 python tools/harness/fetch_rsi.py      # une fois : télécharge les fichiers publics de RSI dans tools/harness/rsi/
 python tools/harness/server.py 8791    # démarre la fausse page Hangar
 ```
 
-Ouvrez ensuite <http://localhost:8791/en/account/pledges?page=1>.
+Ouvrez ensuite <http://localhost:8791/en/account/pledges?page=1> ou <http://localhost:8791/en/account/buy-back-pledges?page=1>.
 
 | Paramètre d'URL | Effet |
 |---|---|
 | `ext=src` | Dossier de l'extension à injecter, relatif à la racine du dépôt (`src` par défaut). Mémorisé par cookie, donc les liens des pagers natifs le gardent. |
 | `style=plain` | Sans le CSS de RSI : plus rapide, lisible hors ligne. |
-| `page=N` | Page RSI demandée (5 pages factices de 10 pledges). |
+| `page=N` | Page RSI demandée : 5 pages factices de 10 pledges pour le hangar, 2 pages pour le Buyback. |
 
 > [!NOTE]
 > Les fichiers de RSI ne sont **pas** versionnés (`tools/harness/rsi/` est ignoré par git). Les noms des bundles `rsi.core` et `rsi.account` contiennent un numéro de build. Si RSI le change, `fetch_rsi.py` explique comment lui passer les nouvelles adresses.
 
-Pour tester deux versions côte à côte, extrayez l'autre version dans un dossier du dépôt (par exemple `git worktree add old release`), puis ouvrez `?ext=old/src`.
+Pour comparer avec une autre version, extrayez-la dans un dossier du dépôt avec `git worktree add .wt-release release`, puis ouvrez `?ext=.wt-release/src`.
+
+`POST /capture?name=X` enregistre le corps de la requête dans `tools/harness/private/X.html`, un dossier ignoré par git, pour transformer une vraie page en données de test. Le navigateur peut toutefois bloquer les requêtes d'un site public vers `localhost` (protection du réseau local).
 
 ---
 
@@ -249,7 +306,8 @@ Pour tester deux versions côte à côte, extrayez l'autre version dans un dossi
 │   ├── web_resources/        Code de l'interface (HangarXPLOR.*.js, CSS, Fuse.js, ship-codes.json)
 │   ├── ui_resources/         Popup de réglages
 │   └── manifest.*.json       Fragments par navigateur, utilisés par build.js
-├── tools/harness/            Banc de test local (fausse page My Hangar)
+├── tools/harness/            Banc de test local (fausses pages My Hangar et Buyback)
+├── scripts/                  refresh-ship-codes.js : régénère ship-codes.json depuis le ship matrix de RSI
 ├── docs/                     Documentation technique et captures (docs/img/)
 ├── build.js                  Construction des archives par navigateur
 └── README.md
@@ -257,7 +315,7 @@ Pour tester deux versions côte à côte, extrayez l'autre version dans un dossi
 
 | Branche | Rôle |
 |---|---|
-| **`main`** | Branche de travail : code d'origine + correctifs + filtre Coupons + banc de test. |
+| **`main`** | Branche de travail : code d'origine + correctifs + PR #139 et #144 reprises + filtre Coupons + banc de test. |
 | `release` | Copie exacte de la branche `release` de l'auteur d'origine, jamais modifiée ici. |
 | `fix/pager-reload-and-rsi-widgets` | Correctif seul, tel que proposé à l'auteur d'origine. |
 | `archive/v1` | Ancienne version (Manifest V2) de l'auteur d'origine. |
@@ -270,18 +328,23 @@ git switch release && git merge --ff-only origin/release && git push gitea relea
 git switch main && git merge release
 ```
 
+**Mettre à jour la liste des vaisseaux** quand RSI en publie de nouveaux : `node scripts/refresh-ship-codes.js`, puis committer `src/web_resources/ship-codes.json`.
+
 ---
 
 ## Contribution au projet d'origine
 
-Les correctifs 1 et 2 sont proposés à l'auteur dans la pull request **[dolkensp/HangarXPLOR#148](https://github.com/dolkensp/HangarXPLOR/pull/148)**, branche `fix/pager-reload-and-rsi-widgets`. Si elle est acceptée et publiée sur les stores, la version officielle redevient utilisable. Le filtre Coupons et le banc de test restent propres à cette édition.
+Les correctifs 1 et 2 sont proposés à l'auteur dans la pull request **[dolkensp/HangarXPLOR#148](https://github.com/dolkensp/HangarXPLOR/pull/148)**, branche `fix/pager-reload-and-rsi-widgets`. Elle est toujours sans réponse : l'auteur ne publie plus rien depuis avril 2026. Les autres correctifs, les PR reprises, le filtre Coupons et le banc de test sont propres à cette édition.
+
+Une analyse des PR ouvertes chez l'auteur a écarté [#145](https://github.com/dolkensp/HangarXPLOR/pull/145) (« trusted sites ») : elle enverrait le contenu du hangar à des sites tiers et demanderait une permission sur tous les sites. Les plus anciennes (#71, #73, #77, #103) sont obsolètes ou en conflit complet avec le code actuel.
 
 ---
 
 ## Crédits et licence
 
 - **HangarXPLOR** : © 2015 Peter Dolkens ([/u/alluran](https://www.reddit.com/user/alluran)) et contributeurs, [dolkensp/HangarXPLOR](https://github.com/dolkensp/HangarXPLOR).
-- **Cette édition** : correctifs de compatibilité, filtre Coupons et banc de test, par Sckriva.
+- **Page Buyback** : Drew Short ([PR #139](https://github.com/dolkensp/HangarXPLOR/pull/139)). **Export des CCU** : Myles Berueda ([PR #144](https://github.com/dolkensp/HangarXPLOR/pull/144)).
+- **Cette édition** : correctifs de compatibilité, intégration et corrections des PR #139 et #144, filtre Coupons et banc de test, par Sckriva.
 - Distribué sous **licence MIT** : voir [LICENSE](LICENSE).
 
 *Star Citizen®, Roberts Space Industries® et Cloud Imperium® sont des marques de Cloud Imperium Rights LLC. Ce projet de fan n'est ni affilié à Cloud Imperium Games ni approuvé par cette société.*
