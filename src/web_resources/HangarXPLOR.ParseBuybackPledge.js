@@ -6,6 +6,7 @@ HangarXPLOR.SafeParseBuybackPledge = function() {
   try {
     HangarXPLOR.ParseBuybackPledge.apply(this, arguments);
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.warn('HangarXPLOR: skipped a buyback pledge it could not parse', e, this);
   }
 };

@@ -42,6 +42,7 @@ HangarXPLOR.SafeParsePledge = function()
   try {
     HangarXPLOR.ParsePledge.apply(this, arguments);
   } catch (e) {
+    // eslint-disable-next-line no-console
     console.warn('HangarXPLOR: skipped a pledge it could not parse', e, this);
   }
 }
