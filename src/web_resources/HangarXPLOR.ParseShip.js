@@ -36,7 +36,9 @@ HangarXPLOR.ParseShip = function()
 
         this.ship_name = (HangarXPLOR._shipMatrix[i].displayName || HangarXPLOR._shipMatrix[i].name);
         found = true;
-        if (HangarXPLOR._shipMatrix[i].thumbnail != undefined) {
+        // RSI's own image already shows the pledge (often with its paint); only CCU'd pledges show the original hull
+        var ownImage = ($('.basic-infos .image', this).attr('style') || '').indexOf('url(') > -1 && !/default-image/.test($('.basic-infos .image', this).attr('style'));
+        if (HangarXPLOR._shipMatrix[i].thumbnail != undefined && (this.filters.is_upgraded || !ownImage)) {
           $('.basic-infos .image', this).css({ 'background-image': 'url("' + HangarXPLOR._shipMatrix[i].thumbnail + '")'});
         }
         break;
