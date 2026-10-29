@@ -18,7 +18,7 @@ HangarXPLOR.ParseUpgrade = function()
     var target_name = this.upgrade_data.target_items[0].name;
     var i, j;
     for (i = 0, j = HangarXPLOR._shipMatrix.length; i < j; i++) {
-      if (target_name.toLowerCase().indexOf(HangarXPLOR._shipMatrix[i].name.toLowerCase()) > -1) {
+      if (HangarXPLOR.ContainsName(target_name, HangarXPLOR._shipMatrix[i].name)) {
 
         HangarXPLOR.Log('Matched', HangarXPLOR._shipMatrix[i].name, 'in', target_name);
 
