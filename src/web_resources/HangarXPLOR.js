@@ -19,19 +19,13 @@ HangarXPLOR._pageType = window.location.pathname.includes('buy-back-pledges') ? 
 HangarXPLOR._buybackInventory = [];                  // Inventory containing all buyback pledges
 HangarXPLOR._buybackFiltered = [];                   // Filtered buyback pledges for display
 HangarXPLOR._buybackRaw = [];                        // Raw HTML for buyback caching
-HangarXPLOR._buybackCounts = {                       // Type counts for summary panel
-  total: 0,
-  ships: 0,
-  paints: 0,
-  upgrades: 0,
-  packages: 0,
-  addons: 0,
-  components: 0,
-  weapons: 0,
-  decorations: 0,
-  subscriber: 0,
-  other: 0
-};
+
+// Type counts for the buyback summary panel
+HangarXPLOR.ResetBuybackCounts = function()
+{
+  HangarXPLOR._buybackCounts = { total: 0, ships: 0, paints: 0, upgrades: 0, packages: 0, addons: 0, components: 0, weapons: 0, decorations: 0, subscriber: 0, other: 0 };
+}
+HangarXPLOR.ResetBuybackCounts();
 
 var RSI = RSI || {};
 
@@ -129,10 +123,10 @@ HangarXPLOR.Initialize = function()
 
             HangarXPLOR.UpdateStatus(0);
 
-            // Generate a simple hash based on current timestamp for buyback cache
-            // Buyback pages don't have the same pledgeLog API
-            var today = new Date().toISOString();
-            HangarXPLOR._buybackActiveHash = today.substr(0, 10) + ':' + HangarXPLOR._cacheSalt;
+            // Buyback pages have no pledgeLog API: key the cache on the pledges RSI shows on this first page,
+            // which change as soon as something is bought back or reclaimed
+            var firstPage = $('a.holosmallbtn', $pledgesList).map(function() { return ($(this).attr('href') || '').replace(/\D+/g, ''); }).get().join(',');
+            HangarXPLOR._buybackActiveHash = firstPage + ':' + HangarXPLOR._cacheSalt;
 
             HangarXPLOR.LoadBuybackCache(HangarXPLOR.LoadBuybackPage);
           } else {

@@ -109,7 +109,8 @@ HangarXPLOR.BuybackPager = function(options, width, className, callback) {
   var maxButtons = 5;
 
   var $control = $('<div>', { class: 'options-selector pager-wrapper ' + className });
-  var $pager = $('<div>', { class: 'pager clearfix js-pager' });
+  // No .js-pager: RSI binds a change handler to it that navigates away to the input's value
+  var $pager = $('<div>', { class: 'pager clearfix' });
   var $left = $('<div>', { class: 'left' });
   var $right = $('<div>', { class: 'right' });
 

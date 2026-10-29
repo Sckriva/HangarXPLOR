@@ -1,6 +1,15 @@
 
 var HangarXPLOR = HangarXPLOR || {};
 
+// One unexpected pledge must not stop the rest of the buyback list from loading
+HangarXPLOR.SafeParseBuybackPledge = function() {
+  try {
+    HangarXPLOR.ParseBuybackPledge.apply(this, arguments);
+  } catch (e) {
+    console.warn('HangarXPLOR: skipped a buyback pledge it could not parse', e, this);
+  }
+};
+
 /**
  * Parses a buyback pledge item from the DOM
  * Called with 'this' context set to the pledge <li> element
@@ -32,10 +41,11 @@ HangarXPLOR.ParseBuybackPledge = function() {
     this.buyback_type = typeNormalization[this.buyback_type];
   }
 
-  // Parse last modified date from dl
+  // Parse the date from dl (RSI labels it "Reclaim Date" since 2026, "Last Modified" before)
   var $dl = $('dl', this);
   var $lastModifiedDt = $dl.find('dt').filter(function() {
-    return $(this).text().trim() === 'Last Modified';
+    var label = $(this).text().trim();
+    return label === 'Reclaim Date' || label === 'Last Modified';
   });
   this.last_modified = $lastModifiedDt.next('dd').text().trim();
 

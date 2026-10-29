@@ -20,7 +20,7 @@ HangarXPLOR.LoadBuybackCache = function(callback) {
       HangarXPLOR.Log('Using buyback cache with', cache['buyback:cache:count'], 'items');
 
       for (var i = 0; i < cache['buyback:cache:count']; i++) {
-        HangarXPLOR.ParseBuybackPledge.apply($(cache['buyback:cache:' + i])[0]);
+        HangarXPLOR.SafeParseBuybackPledge.apply($(cache['buyback:cache:' + i])[0]);
       }
 
       HangarXPLOR.DrawBuybackUI();
@@ -31,18 +31,7 @@ HangarXPLOR.LoadBuybackCache = function(callback) {
     HangarXPLOR._fromCache = false;
 
     // Reset counts before loading fresh data
-    HangarXPLOR._buybackCounts = {
-      total: 0,
-      ships: 0,
-      paints: 0,
-      upgrades: 0,
-      packages: 0,
-      addons: 0,
-      subscriber: 0,
-      other: 0,
-      available: 0,
-      unavailable: 0
-    };
+    HangarXPLOR.ResetBuybackCounts();
 
     if (typeof callback === 'function') callback.call(this);
   });
