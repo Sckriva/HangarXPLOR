@@ -14,6 +14,27 @@ HangarXPLOR._initCount     = HangarXPLOR._initCount || 0;
 
 var RSI = RSI || {};
 
+// True when needle appears in haystack as whole words, so "Mk I" doesn't match inside "Mk II".
+// Punctuation is ignored: "Argo Mole - Carbon Edition" matches "Argo Mole Carbon Edition".
+HangarXPLOR.ContainsName = function(haystack, needle)
+{
+  if (!needle) return false;
+  var normalize = function(s) { return ' ' + s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim() + ' '; };
+  haystack = normalize(haystack);
+  needle = normalize(needle).trim();
+  if (!needle) return false;
+  var isWord = function(c) { return c !== undefined && /[a-z0-9]/i.test(c); };
+  for (var i = haystack.indexOf(needle); i > -1; i = haystack.indexOf(needle, i + 1))
+    if (!isWord(haystack[i - 1]) && !isWord(haystack[i + needle.length])) return true;
+  return false;
+}
+
+// Longest names first, so the first match is the most specific ("Sabre Raven" before "Sabre")
+HangarXPLOR.ByLongestName = function(a, b)
+{
+  return b.name.length - a.name.length || (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
+}
+
 HangarXPLOR.Initialize = function()
 {  
   $.ajax({ 
@@ -50,9 +71,11 @@ HangarXPLOR.Initialize = function()
             focus: ship.focus,
           };
           
-          var customShip = HangarXPLOR._ships[rsiShip.name];
+          // Overrides may be keyed by the stripped name or by the raw matrix name (e.g. 'Argo Mole Talus Edition')
+          var customShip = HangarXPLOR._ships[rsiShip.name] || HangarXPLOR._ships[ship.name.trim()];
 
           delete customShips[rsiShip.name];
+          delete customShips[ship.name.trim()];
 
           return $.extend({}, rsiShip, customShip);
         })
@@ -62,22 +85,14 @@ HangarXPLOR.Initialize = function()
           return ship;
         }))
       
-        .sort((a, b) => {
-          if (a.name.length > b.name.length) return -1;
-          if (a.name < b.name) return 0;
-          return 1;
-        });
+        .sort(HangarXPLOR.ByLongestName);
       
       HangarXPLOR._componentMatrix = []
         .concat($.map(HangarXPLOR._components, (component, key) => {
           if (component.name == undefined) component.name = key;
           return component;
         }))
-        .sort((a, b) => {
-          if (a.name.length > b.name.length) return -1;
-          if (a.name < b.name) return -1;
-          return 1;
-        });
+        .sort(HangarXPLOR.ByLongestName);
       
       HangarXPLOR.LoadSettings(function() {
         var $lists = $('.list-items');

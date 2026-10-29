@@ -30,7 +30,7 @@ HangarXPLOR.ParseShip = function()
     var found = false;
     var i, j;
     for (i = 0, j = HangarXPLOR._shipMatrix.length; i < j; i++) {
-      if (this.ship_name.toLowerCase().indexOf(HangarXPLOR._shipMatrix[i].name.toLowerCase()) > -1) {
+      if (HangarXPLOR.ContainsName(this.ship_name, HangarXPLOR._shipMatrix[i].name)) {
 
         HangarXPLOR.Log('Matched', HangarXPLOR._shipMatrix[i].name, 'in', this.ship_name);
 
